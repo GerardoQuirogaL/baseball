@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
-const usersRouter = require('./routes/users')
+const usersRouter = require('./routes/baseball')
 
 class Server  {
     constructor(){

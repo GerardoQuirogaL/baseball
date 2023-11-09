@@ -1,19 +1,20 @@
 const {request, response} = require('express');
-const usersModel = require('../models/users');
+const usersModel = require('../models/baseball');
 const pool = require('../db');
 
-const listUsers = async (req = request, res = response) => {
+//1
+const listbaseball = async (req = request, res = response) => {
     let conn;
 
     try{
         conn =  await pool.getConnection();
 
-        const users = await conn.query(usersModel.getAll,(err)=>{
+        const baseball = await conn.query(baseballModel.getAll,(err)=>{
             if (err){
                 throw err;
             }
         })
-        res.json(users);
+        res.json(baseball);
     } catch (error){
         console.log(error);
         res.status(500).json(error);
@@ -24,30 +25,31 @@ const listUsers = async (req = request, res = response) => {
     }
 }
 
-const listUsersByID = async (req = request, res = response) => {
-    const {id} = req.params;
+//2
+const baseballByID = async (req = request, res = response) => {
+    const {park} = req.params;
     let conn;
 
-    if (isNaN(id)){
-        res.status(400).json ({msg: `The ID ${id} is invalid`});
+    if (isNaN(park)){
+        res.status(400).json ({msg: `The park ${park} is invalid`});
         return;
     }
 
     try{
         conn =  await pool.getConnection();
 
-        const [user] = await conn.query(usersModel.getByID, [id] ,(err)=>{
+        const [park] = await conn.query(baseballModel.getByPARK, [park] ,(err)=>{
             if (err){
                 throw err;
             }
         })
 
-        if (!user){
-            res.status(404).json({msg: `User with ID ${id} not found`});
+        if (!park){
+            res.status(404).json({msg: `User with ID ${park} not found`});
             return;
         }
 
-        res.json(user);
+        res.json(park);
     } catch (error){
         console.log(error);
         res.status(500).json(error);
@@ -58,45 +60,53 @@ const listUsersByID = async (req = request, res = response) => {
     }
 }
 
-const addUser = async (req = request, res = response) =>{
+//3
+const addpark = async (req = request, res = response) =>{
     const {
-        username,
-        password,
-        email,
-        name,
-        lastname,
-        phonenumber = '',
-        role_id,
-        is_active = 1
+            park,
+            NAME,
+            Cover,
+            LF_Dim,
+            CF_Dim,
+            RF_Dim,
+            LF_W,
+            CF_W,
+            RF_W
     } = req.body;
 
-    if (!username || !password || !email || !name || !lastname || !role_id){
+    if (!park || !NAME || !Cover || !LF_Dim || !CF_Dim || !RF_Dim || !LF_W || !CF_W || !RF_W)
+    {
         res.status(400).json({msg: 'Missing information'});
         return;
     }
 
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    const user = [username,passwordHash,email,name,lastname,phonenumber,role_id,is_active];
-
-    let conn;
+    const Park = [
+            park,
+            NAME,
+            Cover,
+            LF_Dim,
+            CF_Dim,
+            RF_Dim,
+            LF_W,
+            CF_W,
+            RF_W
+    ]
 
     try{
         conn = await pool.getConnection();
 
-        const [usernameExists] = await conn.query(usersModel.getByUsername,[username],(err)=>{
+        const [parkExists] = await conn.query(baseballModel.getByNAME,[NAME],(err)=>{
             if (err) throw err;
         })
-        if (usernameExists){
+        if (parkExists){//AQUI ME QUEDE
             res.status(409).json({msg: `Username ${username} already exists`});
             return;
         }
 
-        const [emailExists] = await conn.query(usersModel.getByEmail,[email],(err)=>{
+        const [NAMEExists] = await conn.query(baseballModel.getByNAME,[NAME],(err)=>{
             if (err) throw err;
         })
-        if (emailExists){
+        if (NAMEExists){
             res.status(409).json({msg: `Email ${email} already exists`});
             return;
         }
@@ -309,9 +319,9 @@ const signInuser = async (req = request, res = response) =>{
 }
 
 module.exports = {
-    listUsers, 
-    listUsersByID, 
-    addUser, 
+    listbaseball, 
+    baseballByID, 
+    addpark, 
     updateUser,
     deleteUser,
     signInuser
