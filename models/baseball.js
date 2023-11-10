@@ -59,7 +59,7 @@ const baseballModel = {
             SET
                 is_active = 0
             WHERE
-                id = ?
+                park = ?
     `,
 }
 

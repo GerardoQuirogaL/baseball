@@ -195,19 +195,19 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
             NewData[index] = NamesOldData[index];
         }
       })
-           const userUpdated = await conn.query(
-            usersModel.updateRow,
-            [...userNewData, id],
+           const nameUpdated = await conn.query(
+            baseballModel.updateRow,
+            [...NewData, park],
             (err) =>{
                 if (err) throw err;
             }
            )
 
- if (userUpdated.affecteRows === 0){//  PENDIENTE
-   throw new Error('User not added')
+ if (nameUpdated.affecteRows === 0){//  PENDIENTE
+   throw new Error('Name not added')
         } 
 
-        res.json({msg: 'USER ADDED SECCESFULLY'});
+        res.json({msg: 'NAME ADDED SECCESFULLY'});
         
     } catch (error) {
         console.log(error);
