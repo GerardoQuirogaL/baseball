@@ -1,5 +1,5 @@
 const {request, response} = require('express');
-const usersModel = require('../models/baseball');
+const baseballModel = require('../models/baseball');
 const pool = require('../db');
 
 //1
@@ -37,19 +37,18 @@ const baseballByID = async (req = request, res = response) => {
 
     try{
         conn =  await pool.getConnection();
-
-        const [park] = await conn.query(baseballModel.getByPARK, [park] ,(err)=>{
+        const [parkID] = await conn.query(baseballModel.getByPARK,[park] ,(err)=>{
             if (err){
                 throw err;
             }
         })
 
-        if (!park){
+        if (!parkID){
             res.status(404).json({msg: `User with ID ${park} not found`});
             return;
         }
 
-        res.json(park);
+        res.json(parkID);
     } catch (error){
         console.log(error);
         res.status(500).json(error);
@@ -91,35 +90,28 @@ const addpark = async (req = request, res = response) =>{
             CF_W,
             RF_W
     ]
+    let conn;
 
     try{
         conn = await pool.getConnection();
 
-        const [parkExists] = await conn.query(baseballModel.getByNAME,[NAME],(err)=>{
-            if (err) throw err;
-        })
-        if (parkExists){//AQUI ME QUEDE
-            res.status(409).json({msg: `Username ${username} already exists`});
-            return;
-        }
-
         const [NAMEExists] = await conn.query(baseballModel.getByNAME,[NAME],(err)=>{
             if (err) throw err;
         })
-        if (NAMEExists){
-            res.status(409).json({msg: `Email ${email} already exists`});
+        if (NAMEExists){//
+            res.status(409).json({msg: `NAME ${NAME} already exists`});
             return;
         }
 
-        const userAdded = await conn.query(usersModel.addRow,[...user], (err)=>{
+        const NAMEAdded = await conn.query(baseballModel.addRow,[...Park], (err)=>{
             if (err) throw err;
         })
 
-        if (userAdded.affectedRows === 0){
-            throw new Error('User not Added');
+        if (NAMEAdded.affectedRows === 0){
+            throw new Error('Name not Added');
         }
         
-        res.json({msg: 'User added succesfully'})
+        res.json({msg: 'Name added succesfully'})
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
@@ -128,90 +120,79 @@ const addpark = async (req = request, res = response) =>{
     }
 }
 
-//Aqui va la para actualizar un usuario si existe
-const updateUser = async (req = request, res = response) => {
+// 4 Aqui va la para actualizar un usuario si existe
+const updateName_Park = async (req = request, res = response) => {
     let conn;
 
     const {
-        username,
-        password,
-        email,
-        name,
-        lastname,
-        phonenumber,
-        role_id,
-        is_active
+            park,
+            NAME,
+            Cover,
+            LF_Dim,
+            CF_Dim,
+            RF_Dim,
+            LF_W,
+            CF_W,
+            RF_W
     } = req.body;
 
-    const { id } = req.params;
+    const { Park } = req.params;
 
-    if (isNaN(id)){
-        res.status(400).json ({msg: `The ID ${id} is invalid`});
+    if (isNaN(park)){
+        res.status(400).json ({msg: `The park ${park} is invalid`});
         return;
     }
-    
-    let passwordHash;
-    if (password){
-        const saltRounds = 10;
-        passwordHash = await bcrypt.hash(password, saltRounds);
-    }
 
-    let userNewData = [
-        username,
-        passwordHash,
-        email,
-        name,
-        lastname,
-        phonenumber,
-        role_id,
-        is_active
+    let NewData = [
+            park,
+            NAME,
+            Cover,
+            LF_Dim,
+            CF_Dim,
+            RF_Dim,
+            LF_W,
+            CF_W,
+            RF_W
     ];
 
     try {
         conn = await pool.getConnection();
 
-const [userExists] = await conn.query
-(usersModel.getByID, 
-    [id], 
+const [PARKExists] = await conn.query
+(baseballModel.getByPARK, 
+    [park], 
     (err) => {
     if (err) throw err;
 });
 
-if (!userExists || userExists.is_active ===0){
-    res.status(409).json({msg: `User with ID ${id} not found`});
-         return;
+if (!PARKExists || PARKExists.is_active ===0){
+    res.status(409).json({msg: `User with ID ${park} not found`});
+         return;//
 }
 
-const [usernameExists] = await conn.query(usersModel.getByUsername, [username], (err) => {
+const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => {
     if (err) throw err;
     })
-    if (usernameExists) {
-        res.status(409).json({msg: `Username ${username} already exists`});
+    if (NameExists) {
+        res.status(409).json({msg: `NAME ${NameExists} already exists`});
         return;
        }
 
-const [emailExists] = await conn.query(usersModel.getByEmail, [email], (err) => {
-      if (err) throw err;
-     })
-      if (emailExists) {
-          res.status(409).json({msg: `Email ${email} already exists`});
-         return;
-           }
-
-        const userOldData = [
-        userExists.username,
-        userExists.password,
-        userExists.email,
-        userExists.name,
-        userExists.lastname,
-        userExists.phonenumber,
-        userExists.role_id,
-        userExists.is_active     
+        const NamesOldData = [
+        PARKExists.park,
+        PARKExists.NAME,
+        PARKExists.Cover,
+        PARKExists.LF_Dim,
+        PARKExists.CF_Dim,
+        PARKExists.RF_Dim,
+        PARKExists.LF_W,
+        PARKExists.CF_W,
+        PARKExists.RF_W    
       ];
 
-      userNewData.forEach((userData, index) =>{
-        if (!userData){
-            userNewData[index] = userOldData[index];
+      NewData.forEach((parkData, index) =>{
+        if (!parkData){
+            NewData[index] = NamesOldData[index];
         }
       })
            const userUpdated = await conn.query(
@@ -222,7 +203,7 @@ const [emailExists] = await conn.query(usersModel.getByEmail, [email], (err) => 
             }
            )
 
- if (userUpdated.affecteRows === 0){
+ if (userUpdated.affecteRows === 0){//  PENDIENTE
    throw new Error('User not added')
         } 
 
@@ -322,7 +303,7 @@ module.exports = {
     listbaseball, 
     baseballByID, 
     addpark, 
-    updateUser,
+    updateName_Park,
     deleteUser,
     signInuser
     }

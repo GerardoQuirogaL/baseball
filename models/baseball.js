@@ -3,13 +3,13 @@ const baseballModel = {
         SELECT
             *
         FROM
-            baseball
+        baseball
     `,
     getByPARK: `
     SELECT
     *
     FROM
-        baseball
+       baseball
     WHERE
         park = ?
     `,
@@ -21,17 +21,9 @@ const baseballModel = {
     WHERE
         NAME = ?
     `,
-    getByEmail: `
-    SELECT
-    *
-    FROM
-        Users
-    WHERE
-        email = ?
-    `,
     addRow:`
     INSERT INTO
-        park (
+        baseball (
             park,
             NAME,
             Cover,
