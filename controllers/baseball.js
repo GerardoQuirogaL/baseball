@@ -73,7 +73,7 @@ const addpark = async (req = request, res = response) =>{
             RF_W
     } = req.body;
 
-    if (!park || !NAME || !Cover || !LF_Dim || !CF_Dim || !RF_Dim || !LF_W || !CF_W || !RF_W)
+    if ( !park || !NAME || !Cover || !LF_Dim || !CF_Dim || !RF_Dim || !LF_W || !CF_W || !RF_W)
     {
         res.status(400).json({msg: 'Missing information'});
         return;
@@ -125,7 +125,7 @@ const updateName_Park = async (req = request, res = response) => {
     let conn;
 
     const {
-            park,
+            
             NAME,
             Cover,
             LF_Dim,
@@ -138,13 +138,8 @@ const updateName_Park = async (req = request, res = response) => {
 
     const { Park } = req.params;
 
-    if (isNaN(park)){
-        res.status(400).json ({msg: `The park ${park} is invalid`});
-        return;
-    }
-
     let NewData = [
-            park,
+            
             NAME,
             Cover,
             LF_Dim,
@@ -160,13 +155,13 @@ const updateName_Park = async (req = request, res = response) => {
 
 const [PARKExists] = await conn.query
 (baseballModel.getByPARK, 
-    [park], 
+    [Park], 
     (err) => {
     if (err) throw err;
 });
 
 if (!PARKExists || PARKExists.is_active ===0){
-    res.status(409).json({msg: `User with ID ${park} not found`});
+    res.status(409).json({msg: `User with ID ${Park} not found`});
          return;//
 }
 
@@ -179,7 +174,7 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
        }
 
         const NamesOldData = [
-        PARKExists.park,
+        
         PARKExists.NAME,
         PARKExists.Cover,
         PARKExists.LF_Dim,
@@ -197,13 +192,13 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
       })
            const nameUpdated = await conn.query(
             baseballModel.updateRow,
-            [...NewData, park],
+            [...NewData, Park],
             (err) =>{
                 if (err) throw err;
             }
            )
 
- if (nameUpdated.affecteRows === 0){//  PENDIENTE
+ if (nameUpdated.affectedRows === 0){ //corregi
    throw new Error('Name not added')
         } 
 
@@ -218,29 +213,24 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
     }
 }
 
-const deleteUser = async (req = request, res = response) =>{
+const deleteBaseball = async (req = request, res = response) =>{
     let conn;
-    const {id} = req.params;
-
-    if (isNaN(id)){
-        res.status(400).json ({msg: `The ID ${id} is invalid`});
-        return;
-    }
+    const {park} = req.params;
 
     try{
         conn = await pool.getConnection();
-        const [usersExists] = await conn.query(usersModel.getByID,[id], (err) =>{
+        const [NameExists] = await conn.query(baseballModel.getByPARK,[park], (err) =>{
             if (err) throw err;
         });
-        if (!usersExists || usersExists.is_active === 0){
-            res.status(404).json({msg: `User with ID ${id} not found`});
+        if (!NameExists || NameExists.is_active === 0){
+            res.status(404).json({msg: `User with park ${park} not found`});
             return;
         }
-        const usersDeleted = await conn.query(usersModel.deleteRow,[id],(err) =>{
+        const parkDeleted = await conn.query(baseballModel.deleteRow,[park],(err) =>{
             if (err) throw err;
         });
         
-        if (usersDeleted.affectedRows === 0){
+        if (parkDeleted.affectedRows === 0){
             throw new Error('User not deleted');
         }
 
@@ -254,58 +244,12 @@ const deleteUser = async (req = request, res = response) =>{
     }
 }
 
-//
-const signInuser = async (req = request, res = response) =>{
-    let conn;
-
-    const {username, password} = req.body;
-
-    try {
-    conn  = await pool.getConnection();
-
-        if (!username || !password){
-            res.status(400).json({msg: 'You must send Username and password'});
-            return;
-        }
-    
-        const [user] =  await conn.query(usersModel.getByUsername, 
-            [username], 
-            (err) => {
-            if(err)throw err;
-        });
-    
-        if (!user){
-            res.status(404).json({msg: `Wrong username or password`});
-            return;
-        }
-    
-    
-        if(!passwordOk){
-            res.status(404).json({msg: `Wrong username or password`});
-            return;
-        }
-
-        delete(user.password);
-        delete(user.create_at);
-        delete(user.updated_at);
-
-        res.json(user);
-
-    }catch(error){
-        console.log(error);
-        res.status(500).json(error);
-    }finally{
-        if (conn) conn.end();
-    }
-}
-
 module.exports = {
     listbaseball, 
     baseballByID, 
     addpark, 
     updateName_Park,
-    deleteUser,
-    signInuser
+    deleteBaseball
     }
 
 // routes       controllers       models(DB)

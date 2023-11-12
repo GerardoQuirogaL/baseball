@@ -41,26 +41,25 @@ const baseballModel = {
     UPDATE
         baseball
     SET
-        park,
-        NAME,
-        Cover,
-        LF_Dim,
-        CF_Dim,
-        RF_Dim,
-        LF_W,
-        CF_W,
-        RF_W
+        
+        NAME = ?,
+        Cover = ?,
+        LF_Dim = ?,
+        CF_Dim = ?,
+        RF_Dim = ?,
+        LF_W = ?,
+        CF_W = ?,
+        RF_W = ?
     WHERE
         park = ?
 `,
     deleteRow: `
-            UPDATE
+            DELETE 
+            FROM
                 baseball
-            SET
-                is_active = 0
             WHERE
                 park = ?
-    `,
+    `
 }
 
 module.exports = baseballModel;
