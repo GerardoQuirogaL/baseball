@@ -136,7 +136,7 @@ const updateName_Park = async (req = request, res = response) => {
             RF_W
     } = req.body;
 
-    const { Park } = req.params;
+    const { park } = req.params;
 
     let NewData = [
             
@@ -155,13 +155,13 @@ const updateName_Park = async (req = request, res = response) => {
 
 const [PARKExists] = await conn.query
 (baseballModel.getByPARK, 
-    [Park], 
+    [park], 
     (err) => {
     if (err) throw err;
 });
 
-if (!PARKExists || PARKExists.is_active ===0){
-    res.status(409).json({msg: `User with ID ${Park} not found`});
+if (!PARKExists){
+    res.status(409).json({msg: `User with ID ${park} not found`});
          return;//
 }
 
@@ -192,7 +192,7 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
       })
            const nameUpdated = await conn.query(
             baseballModel.updateRow,
-            [...NewData, Park],
+            [...NewData, park],
             (err) =>{
                 if (err) throw err;
             }
@@ -212,7 +212,7 @@ const [NameExists] = await conn.query(baseballModel.getByNAME, [NAME], (err) => 
         if (conn) conn.end();
     }
 }
-
+//5
 const deleteBaseball = async (req = request, res = response) =>{
     let conn;
     const {park} = req.params;
